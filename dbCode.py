@@ -35,4 +35,19 @@ def create_tables(): #creating tables (if not exist)
     
     return 0
 
+def add_reader(full_name, phone, age=18): # "Name Surname", 8**********
+    name = full_name.split()[0]
+    surname = full_name.split()[1]
+    
+    pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
+    
+    curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
+                    VALUES
+                    (?, ?, ?, ?)""", (pr, full_name, phone, age,))
+    
+    con.commit()
+    
+    return 0
+
 create_tables()
+add_reader("Иван Иванов", "89991112233")
