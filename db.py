@@ -3,8 +3,8 @@ import sqlite3
 def connect_db(path): #connecting db
     return sqlite3.connect(path)
 
-def create_tables(connect=connect_db("dbL.db")): #creating tables (if not exist)
-    curs = connect.cursor()
+def create_tables(db_connect=connect_db("dbL.db")): #creating tables (if not exist)
+    curs = db_connect.cursor()
     
     curs.execute("""CREATE TABLE IF NOT EXISTS readers (
                     pr TEXT PRIMARY KEY,
@@ -15,6 +15,7 @@ def create_tables(connect=connect_db("dbL.db")): #creating tables (if not exist)
     curs.execute("""CREATE TABLE IF NOT EXISTS books (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
+                    author TEXT NOT NULL,
                     genre TEXT NOT NULL,
                     total INTEGER NOT NULL CHECK(total >= 1),
                     free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
@@ -33,7 +34,7 @@ def create_tables(connect=connect_db("dbL.db")): #creating tables (if not exist)
                     total INTEGER NOT NULL CHECK(total >= 1),
                     free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
     
-    connect.commit()
+    db_connect.commit()
     
     return 0
 

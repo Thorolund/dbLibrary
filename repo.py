@@ -1,7 +1,24 @@
 import sqlite3
 
-def add_reader(connect, full_name, phone, age=18): # connect, "Name Surname", 8**********, age
-    curs = connect.cursor()
+def add_book(db_connect, title, author, genre, n):
+    curs = db_connect.cursor()
+    
+    already_exists = False
+    
+    
+    if already_exists:
+        curs.execute("""UPDATE books
+                        SET total = total + ?
+                        WHERE author == ? AND title == ?""", (n, author, title))
+    else:
+        curs.execute("""INSERT INTO books (title, author, genre, total, free)
+                        VALUES
+                        (?, ?, ?, ?, ?)""", (title, author, genre, n, n))
+        
+    db_connect.commit()
+    
+def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surname", 8**********, age
+    curs = db_connect.cursor()
     
     name = full_name.split()[0]
     surname = full_name.split()[1]
@@ -12,16 +29,16 @@ def add_reader(connect, full_name, phone, age=18): # connect, "Name Surname", 8*
                     VALUES
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
     
-    connect.commit()
+    db_connect.commit()
     
     return 0
 
-def delete_reader(connect, pr):
-    curs = connect.cursor()
+def delete_reader(db_connect, pr):
+    curs = db_connect.cursor()
     
     curs.execute("""DELETE FROM readers
                     WHERE pr == ?""", (pr, ))
     
-    connect.commit()
+    db_connect.commit()
     
     return 0
