@@ -1,9 +1,10 @@
 import sqlite3
 
-def create_tables(): #creating tables (if not exist)
-    
-    con = sqlite3.connect("db_L.db")
-    curs = con.cursor()
+def connect_db(path): #connecting db
+    return sqlite3.connect(path)
+
+def create_tables(connect=connect_db("dbL.db")): #creating tables (if not exist)
+    curs = connect.cursor()
     
     curs.execute("""CREATE TABLE IF NOT EXISTS readers (
                     pr TEXT PRIMARY KEY,
@@ -32,10 +33,8 @@ def create_tables(): #creating tables (if not exist)
                     total INTEGER NOT NULL CHECK(total >= 1),
                     free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
     
-    con.commit()
+    connect.commit()
     
     return 0
 
-def connect_db(path):
-    return sqlite3.connect(path)
-
+create_tables(connect_db("dbL.db"))
