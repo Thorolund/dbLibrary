@@ -4,17 +4,7 @@ import tech
 def add_book(db_connect, title, author, genre, n):
     curs = db_connect.cursor()
     
-
-    already_exists = False
-    
-
-    curs.execute("""SELECT books
-                 WHERE title==? AND author==?""", (title, author))
-    if curs.fetchall():
-        already_exists=True
-    else:
-        already_exists=False
-
+    already_exists = tech.check_book_exist(db_connect, author, title)
 
     if already_exists:
         curs.execute("""UPDATE books
@@ -33,9 +23,9 @@ def delete_book(db_connect, title, author, genre, n):
     if check_not_holded:         
         curs.execute("""DELETE FROM books                          
                         WHERE author == ? AND title == ?""", (author, title))                  
-        return "OK"     
+        return True
     else:         
-        return "No OK"
+        return False
     
 def add_reader(db_connect, full_name, phone, age=18):
     curs = db_connect.cursor()
@@ -46,7 +36,7 @@ def add_reader(db_connect, full_name, phone, age=18):
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
 
 
-    no_already_exists = tech.check_reader_exist(db_connect, pr)
+    no_already_exists = not(tech.check_reader_exist(db_connect, pr))
     
     if no_already_exists:
 
