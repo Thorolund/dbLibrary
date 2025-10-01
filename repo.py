@@ -16,6 +16,16 @@ def add_book(db_connect, title, author, genre, n):
                         (?, ?, ?, ?, ?)""", (title, author, genre, n, n))
         
     db_connect.commit()
+
+def delete_book(db_connect, title, author, genre, n):     
+    curs = db_connect.cursor()      
+    check_not_holded = True          
+    if check_not_holded:         
+        curs.execute("""DELETE FROM books                          
+                        WHERE author == ? AND title == ?""", (author, title))                  
+        return "OK"     
+    else:         
+        return "No OK"
     
 def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surname", 8**********, age
     curs = db_connect.cursor()
