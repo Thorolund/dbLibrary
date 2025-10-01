@@ -1,15 +1,10 @@
 import sqlite3
+import tech
 
 def add_book(db_connect, title, author, genre, n):
     curs = db_connect.cursor()
     
-    curs.execute("""SELECT books
-                 WHERE title==? AND author==?""", (title, author))
-    if curs.fetchall():
-        already_exists=True
-    else:
-        already_exists=False
-
+    already_exists = tech.check_book_exist(db_connect, author, title)
 
     if already_exists:
         curs.execute("""UPDATE books
@@ -48,18 +43,8 @@ def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surnam
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
 
 
-
-
-    curs.execute("""SELECT readers
-                 WHERE pr==?""", (pr, ))
+    no_already_exists = not(tech.check_reader_exist(db_connect, pr))
     
-    if curs.fetchall():
-        no_already_exists=True
-    else:
-        no_already_exists=False
-    
-
-
     if no_already_exists:
 
         curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
