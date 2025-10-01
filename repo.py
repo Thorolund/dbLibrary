@@ -5,7 +5,6 @@ def add_book(db_connect, title, author, genre, n):
     
     already_exists = False
     
-    
     if already_exists:
         curs.execute("""UPDATE books
                         SET total = total + ?
@@ -27,7 +26,7 @@ def delete_book(db_connect, title, author, genre, n):
     else:         
         return "No OK"
     
-def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surname", 8**********, age
+def add_reader(db_connect, full_name, phone, age=18):
     curs = db_connect.cursor()
     
     name = full_name.split()[0]
