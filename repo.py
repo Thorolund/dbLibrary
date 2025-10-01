@@ -3,9 +3,14 @@ import sqlite3
 def add_book(db_connect, title, author, genre, n):
     curs = db_connect.cursor()
     
-    already_exists = False
-    
-    
+    curs.execute("""SELECT books
+                 WHERE title==? AND author==?""", (title, author))
+    if curs.fetchall():
+        already_exists=True
+    else:
+        already_exists=False
+
+
     if already_exists:
         curs.execute("""UPDATE books
                         SET total = total + ?
@@ -24,10 +29,27 @@ def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surnam
     surname = full_name.split()[1]
     
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
+
+
+
+
+    curs.execute("""SELECT readers
+                 WHERE pr==?""", (pr, ))
     
-    curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
+    if curs.fetchall():
+        no_already_exists=True
+    else:
+        no_already_exists=False
+    
+
+
+    if no_already_exists:
+
+        curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
                     VALUES
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
+    else:
+        return False    
     
     db_connect.commit()
     
