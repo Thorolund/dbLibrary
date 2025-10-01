@@ -1,8 +1,36 @@
 import sqlite3
+import tech
 
-def book_book(connect, pr, title, author):
-    curs = connect.cursor()
+def find_books(db_connect, title=None, author=None, genre=None):
+    curs = db_connect.cursor()
 
+
+        
+    where_check = ""
+    if title != None:
+        if where_check != "":
+            where_check += " AND"
+        where_check += f" title == {title}"
+
+    if author != None:
+        if where_check != "":
+            where_check += " AND"
+        where_check += f" author == {author}"
+    
+    if genre != None:
+        if where_check != "":
+            where_check += " AND"
+        where_check += f" genre == {genre}"
+    
+    if where_check != "":
+            where_check = "WHERE" + where_check
+
+    curs.execute(f"""SELECT * FROM books
+                     {where_check}""")
+    
+    return [i for i in curs.fetchall]
+def booking(db_connect,title,author):
+    curs = db_connect.cursor()
     checking_reader=True
     if checking_reader:
 
@@ -13,4 +41,3 @@ def book_book(connect, pr, title, author):
                      SET free= free-1
                      WHERE id==?""", (id_book, ))
         curs.execute("""INSERT INTO holds """)
-        

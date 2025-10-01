@@ -3,10 +3,8 @@ import tech
 
 def add_book(db_connect, title, author, genre, n):
     curs = db_connect.cursor()
-    
-    already_exists = tech.check_book_exist(db_connect, author, title)
 
-    if already_exists:
+    if tech.check_book_exist(db_connect, author, title):
         curs.execute("""UPDATE books
                         SET total = total + ?
                         WHERE author == ? AND title == ?""", (n, author, title))
@@ -17,6 +15,7 @@ def add_book(db_connect, title, author, genre, n):
         
     db_connect.commit()
 
+
 def delete_book(db_connect, title, author, genre, n):     
     curs = db_connect.cursor()   
     check_not_holded = True     
@@ -24,8 +23,15 @@ def delete_book(db_connect, title, author, genre, n):
 
     if check_not_holded:         
         curs.execute("""DELETE FROM books                          
+<<<<<<< HEAD
                         WHERE author == ? AND title == ?""", (author, title))             
         return True    
+=======
+                        WHERE author == ? AND title == ?""", (author, title))     
+
+        db_connect.commit()             
+        return True
+>>>>>>> 377a91b5bdacca53b5a607464a4fd72f70416e27
     else:         
         return False
     
@@ -41,21 +47,18 @@ def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surnam
     surname = full_name.split()[1]
     
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
-
-
-    no_already_exists = not(tech.check_reader_exist(db_connect, pr))
     
-    if no_already_exists:
+    if not(tech.check_reader_exist(db_connect, pr)):
 
         curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
                     VALUES
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
+        
+        db_connect.commit()
+
+        return True
     else:
         return False    
-    
-    db_connect.commit()
-    
-    return 0
 
 def delete_reader(db_connect, pr):
     curs = db_connect.cursor()
