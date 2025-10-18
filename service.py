@@ -226,4 +226,33 @@ def get_reader_holds(db_connect, pr):
 
 
 
+def get_prosrochka_books(db_connect):
+
+    curs = db_connect.cursor()
+    date = datetime.now()
+    
+    curs.execute('''SELECT readers.pr, readers.full_name, books.title, books.author, loans.date 
+        FROM loans 
+        JOIN readers ON loans.pr = readers.pr 
+        JOIN books  ON loans.book_id = books.id
+    ''')
+
+    all_loans = curs.fetchall()
+    prosrochka_books = []
+
+    
+    for loan in all_loans:
+
+        loan_datetime = datetime.strptime(loan[4], "%d/%m/%y")
+        return_date = loan_datetime + timedelta(days=14)
+        
+        
+        if date > return_date:
+            date_return = return_date.strftime("%d/%m/%y")
+            loan[4] = date_return
+            
+        prosrochka_books.append(loan)
+
+    return prosrochka_books
+
 
