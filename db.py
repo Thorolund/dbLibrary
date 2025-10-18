@@ -1,9 +1,15 @@
 import sqlite3
 
-def connect_db(path): #connecting db
+def connect_db(path:str):
+    """
+    Connecting To DataBase With Gotten Path
+    """
     return sqlite3.connect(path)
 
-def create_tables(db_connect=connect_db("dbL.db")): #creating tables (if not exist)
+def create_tables(db_connect=connect_db("dbL.db")):
+    """
+    Creating Tables(readers, books, loans, holds) If Not Exist
+    """
     curs = db_connect.cursor()
     
     curs.execute("""CREATE TABLE IF NOT EXISTS readers (
@@ -35,7 +41,5 @@ def create_tables(db_connect=connect_db("dbL.db")): #creating tables (if not exi
                     free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
     
     db_connect.commit()
-    
-    return 0
 
 create_tables(connect_db("dbL.db"))

@@ -1,11 +1,12 @@
 import sqlite3
 import tech
 
-def find_books(db_connect, title=None, author=None, genre=None):
+def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
+    """
+    Find Books By Many Filters
+    """
     curs = db_connect.cursor()
 
-
-        
     where_check = ""
     if title != None:
         if where_check != "":
@@ -32,12 +33,15 @@ def find_books(db_connect, title=None, author=None, genre=None):
 def booking(db_connect,title,author):
     curs = db_connect.cursor()
     checking_reader=True
-    if checking_reader:
-
-        curs.execute("""SELECT * FROM books 
+    if not(checking_reader):
+        return False
+    curs.execute("""SELECT * FROM books 
                      WHERE title==? AND author==?""",(title, author))
-        id_book=curs.fetchone()[0]
-        curs.execute("""UPDATE books
+    id_book=curs.fetchone()[0]
+    curs.execute("""UPDATE books
                      SET free= free-1
                      WHERE id==?""", (id_book, ))
-        curs.execute("""INSERT INTO holds """)
+    curs.execute("""INSERT INTO holds """)
+    
+    db_connect.commit()
+    return True

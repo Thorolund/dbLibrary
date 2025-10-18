@@ -1,7 +1,10 @@
 import sqlite3
 import tech
 
-def add_book(db_connect, title, author, genre, n):
+def add_book(db_connect:sqlite3.connect, title:str, author:str, genre:str, n:int = 1):
+    """
+    If Book Exists - Free+=n And Total+=n. If Not Exist - Create New Row In DataBase
+    """
     curs = db_connect.cursor()
 
     if tech.check_book_exist(db_connect, author, title):
@@ -12,35 +15,34 @@ def add_book(db_connect, title, author, genre, n):
         curs.execute("""INSERT INTO books (title, author, genre, total, free)
                         VALUES
                         (?, ?, ?, ?, ?)""", (title, author, genre, n, n))
-        
     db_connect.commit()
+    
+    return True
 
 
-def delete_book(db_connect, title, author, genre, n):     
+def delete_book(db_connect, title:str, author:str):
+    """
+    If Book Exists - Delete Row From DataBase
+    """ 
     curs = db_connect.cursor()   
     check_not_holded = True     
 
-
-    if check_not_holded:         
-        curs.execute("""DELETE FROM books                          
-<<<<<<< HEAD
-                        WHERE author == ? AND title == ?""", (author, title))             
-        return True    
-=======
-                        WHERE author == ? AND title == ?""", (author, title))     
-
-        db_connect.commit()             
-        return True
->>>>>>> 377a91b5bdacca53b5a607464a4fd72f70416e27
-    else:         
+    if not(tech.check_book_exist(db_connect, author, title)):
+        return False
+    if not(check_not_holded):
         return False
     
+    curs.execute("""DELETE FROM books                          
+                    WHERE author == ? AND title == ?""", (author, title))     
+    db_connect.commit()
+    
+    return True         
 
-
-
-
-
-def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surname", 8**********, age
+    
+def add_reader(db_connect, full_name:str, phone:str, age:int=18):
+    """
+    If Primary Key Of Reader Not Exist - Create New Row In DataBase
+    """
     curs = db_connect.cursor()
     
     name = full_name.split()[0]
@@ -48,19 +50,22 @@ def add_reader(db_connect, full_name, phone, age=18): # db_connect, "Name Surnam
     
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
     
-    if not(tech.check_reader_exist(db_connect, pr)):
+    if tech.check_reader_exist(db_connect, pr):
+        return False
 
-        curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
+    curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
                     VALUES
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
         
-        db_connect.commit()
+    db_connect.commit()
 
-        return True
-    else:
-        return False    
+    return True   
 
-def delete_reader(db_connect, pr):
+
+def delete_reader(db_connect, pr:str):
+    """
+    If Reader Exists And Not Loans/Holds - Delete Row From DataBase
+    """
     curs = db_connect.cursor()
     
     curs.execute("""DELETE FROM readers
@@ -68,4 +73,4 @@ def delete_reader(db_connect, pr):
     
     db_connect.commit()
     
-    return 0
+    return True
