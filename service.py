@@ -1,5 +1,6 @@
 import sqlite3
 import tech
+from datetime import*
 
 def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
     """
@@ -30,18 +31,50 @@ def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
                      {where_check}""")
     
     return [i for i in curs.fetchall]
-def booking(db_connect,title,author):
-    curs = db_connect.cursor()
-    checking_reader=True
-    if not(checking_reader):
+
+
+
+
+def getdate():
+
+    return datetime.now().strftime("%d/%m/%y")
+
+
+
+def hold_book(connection, pr, title, author):
+
+    """
+    booking for reader
+    """
+
+    curs = connection.cursor()
+    
+
+    curs.execute("SELECT * FROM books WHERE title==? AND author==? AND free!=0""",(title, author))
+    free_count = curs.fetchone()
+    book_id = curs.fetchone()[0]
+
+    if not free_count:
+        print(f"Нет свободных экземпляров книги '{title}'")
         return False
-    curs.execute("""SELECT * FROM books 
-                     WHERE title==? AND author==?""",(title, author))
-    id_book=curs.fetchone()[0]
+    
+    
+    curs.execute("SELECT COUNT(*) FROM holds WHERE pr = ?", (pr,))
+    active_holds = curs.fetchone()[0]
+
+    if active_holds >= 5:
+        return False
+    
+    date=getdate()
+
+    curs.execute("INSERT INTO holds (pr, book_id, date) VALUES (?, ?, ?)", (pr, book_id, date))
+
     curs.execute("""UPDATE books
                      SET free= free-1
-                     WHERE id==?""", (id_book, ))
-    curs.execute("""INSERT INTO holds """)
-    
-    db_connect.commit()
+                     WHERE id==?""", (book_id, ))
+
+
     return True
+
+
+
