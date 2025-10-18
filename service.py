@@ -191,8 +191,7 @@ def return_book(connection, pr, title, author):
 
 def get_reader_loans(connection, pr):
     curs = connection.cursor()
-    curs.execute('''
-        SELECT books.title, books.author, loans.date 
+    curs.execute('''SELECT books.title, books.author, loans.date 
         FROM loans 
         JOIN books ON loans.book_id = books.id 
         WHERE loans.pr = ?''', (pr,))
@@ -209,6 +208,23 @@ def get_reader_loans(connection, pr):
 
 
 
+def get_reader_loans(connection, pr):
+    curs = connection.cursor()
+    curs.execute('''SELECT books.title, books.author, holds.date 
+        FROM holds 
+        JOIN books ON holds.book_id = books.id 
+        WHERE holds.pr = ?''', (pr,))
+
+    alllines=curs.fetchall()
+    final_holds=[]
+
+
+    for i in  range(len(alllines)):
+        data=alllines[i][2]
+        info_one=alllines[i].append(data+timedelta(days=5).strftime('%d/%m/%Y'))
+        final_holds=final_holds.append(info_one)
+    
+    return final_holds()
 
 
 
