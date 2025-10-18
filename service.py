@@ -181,3 +181,35 @@ def return_book(connection, pr, title, author):
 
     print(f"Книга '{title}' возвращена читателем {pr}")
     return True
+
+
+
+
+
+
+
+
+def get_reader_loans(connection, pr):
+    curs = connection.cursor()
+    curs.execute('''
+        SELECT books.title, books.author, loans.date 
+        FROM loans 
+        JOIN books ON loans.book_id = books.id 
+        WHERE loans.pr = ?''', (pr,))
+    alllines=curs.fetchall()
+    final_loans=[]
+
+
+    for i in  range(len(alllines)):
+        data=alllines[i][2]
+        info_one=alllines[i].append(data+timedelta(days=14).strftime('%d/%m/%Y'))
+        final_loans=final_loans.append(info_one)
+    
+    return final_loans()
+
+
+
+
+
+
+
