@@ -41,13 +41,13 @@ def getdate():
 
 
 
-def booking_book(connection, pr, title, author):
+def booking_book(db_connect, pr, title, author):
 
     """
     booking for reader
     """
 
-    curs = connection.cursor()
+    curs = db_connect.cursor()
     
 
     curs.execute("SELECT * FROM books WHERE title==? AND author==? AND free!=0""",(title, author))
@@ -78,9 +78,9 @@ def booking_book(connection, pr, title, author):
 
 
 
-def cancel_booking(connection, pr, title, author):
-    """Снятие бронирования книги"""
-    curs = connection.cursor()
+def cancel_booking(db_connect, pr, title, author):
+    """cancel booking"""
+    curs = db_connect.cursor()
     curs.execute("SELECT id FROM books WHERE title==? AND author==? """,(title, author))
     book_id = curs.fetchone()[0]
 
@@ -101,4 +101,55 @@ def cancel_booking(connection, pr, title, author):
                      WHERE id==?""", (book_id, ))
 
     print(f"Бронирование книги '{title}' для читателя {pr} отменено")
+    return True
+
+
+
+
+def take_book_home(db_connect, pr, title, author):
+    """take book home"""
+    curs = db_connect.cursor()
+    
+    curs.execute("SELECT id FROM books WHERE title==? AND author==? """,(title, author))
+    book_id = curs.fetchone()[0]
+    
+    if not book_id:
+        return False
+    
+    
+    if not tech.check_reader_exist(db_connect, pr):
+        return False
+    
+
+    curs.execute("SELECT COUNT(*) FROM loans WHERE pr = ?", (pr,))
+    loans =curs.fetchone()[0]
+    if loans >=5:
+        return False
+    
+
+    curs.execute("SELECT free FROM books WHERE id = ? AND free !=0", (book_id,))
+    free_count = curs.fetchone()
+
+    
+    curs.execute("SELECT id FROM holds WHERE pr = ? AND book_id = ?", (pr, book_id))
+    has_hold = curs.fetchone()
+    
+    if not free_count and not has_hold:
+        return False
+    
+
+    if has_hold:
+        curs.execute("DELETE FROM holds WHERE pr = ? AND book_id = ?", (pr, book_id))
+
+        curs.execute("""UPDATE books
+                     SET free= free-1
+                     WHERE id==?""", (book_id, ))
+    
+
+    date=getdate()
+    curs.execute("INSERT INTO loans (pr, book_id, date) VALUES (?, ?, ?)", (pr, book_id, date))
+
+
+    
+    print(f"Книга '{title}' выдана читателю {pr}")
     return True
