@@ -41,7 +41,7 @@ def getdate():
 
 
 
-def hold_book(connection, pr, title, author):
+def booking_book(connection, pr, title, author):
 
     """
     booking for reader
@@ -78,3 +78,27 @@ def hold_book(connection, pr, title, author):
 
 
 
+def cancel_booking(connection, pr, title, author):
+    """Снятие бронирования книги"""
+    curs = connection.cursor()
+    curs.execute("SELECT id FROM books WHERE title==? AND author==? """,(title, author))
+    book_id = curs.fetchone()[0]
+
+    if not book_id:
+        print(f"Книги '{title}' нет")
+        return False
+
+    
+    curs.execute("SELECT id FROM holds WHERE pr = ? AND book_id = ?", (pr, book_id))
+
+    if not curs.fetchone():
+        return False
+    
+    curs.execute("DELETE FROM holds WHERE pr = ? AND book_id = ?", (pr, book_id))
+
+    curs.execute("""UPDATE books
+                     SET free= free+1
+                     WHERE id==?""", (book_id, ))
+
+    print(f"Бронирование книги '{title}' для читателя {pr} отменено")
+    return True
