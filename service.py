@@ -153,3 +153,31 @@ def take_book_home(db_connect, pr, title, author):
     
     print(f"Книга '{title}' выдана читателю {pr}")
     return True
+
+
+def return_book(connection, pr, title, author):
+    """return book"""
+    curs = connection.cursor()
+
+    curs.execute("SELECT id FROM books WHERE title==? AND author==? """,(title, author))
+    book_id = curs.fetchone()[0]
+
+
+    if not book_id:
+        return False
+    
+    
+    curs.execute("SELECT * FROM loans WHERE pr = ? AND book_id = ?", (pr, book_id))
+    if not curs.fetchone():
+        return False
+    
+    curs.execute("DELETE FROM loans WHERE pr = ? AND book_id = ?", (pr, book_id))
+
+
+    curs.execute("""UPDATE books
+                     SET free= free+1
+                     WHERE id==?""", (book_id, ))
+
+
+    print(f"Книга '{title}' возвращена читателем {pr}")
+    return True
