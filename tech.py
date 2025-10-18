@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import*
 
 def check_reader_exist(db_connect, pr:str) -> bool:
     """
@@ -21,3 +22,7 @@ def check_book_exist(db_connect, title:str, author:str) -> bool:
                  WHERE title==? AND author==?""", (title, author))
     
     return len([i for i in curs.fetchall()])>0
+
+def getdate():
+
+    return datetime.now().strftime("%d/%m/%y")
