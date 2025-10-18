@@ -155,9 +155,9 @@ def take_book_home(db_connect, pr, title, author):
     return True
 
 
-def return_book(connection, pr, title, author):
+def return_book(db_connect, pr, title, author):
     """return book"""
-    curs = connection.cursor()
+    curs = db_connect.cursor()
 
     curs.execute("SELECT id FROM books WHERE title==? AND author==? """,(title, author))
     book_id = curs.fetchone()[0]
@@ -181,3 +181,58 @@ def return_book(connection, pr, title, author):
 
     print(f"Книга '{title}' возвращена читателем {pr}")
     return True
+
+
+
+
+
+
+
+
+def get_reader_loans(db_connect, pr):
+    curs = db_connect.cursor()
+    curs.execute('''SELECT books.title, books.author, loans.date 
+        FROM loans 
+        JOIN books ON loans.book_id = books.id 
+        WHERE loans.pr = ?''', (pr,))
+    alllines=curs.fetchall()
+    final_loans=[]
+
+
+    for i in  range(len(alllines)):
+        date=alllines[i][2]
+        date = datetime.strptime(date, "%d/%m/%Y")
+
+        info_one=alllines[i].append((date+timedelta(days=14)).strftime('%d/%m/%Y'))
+
+        final_loans=final_loans.append(info_one)
+    
+    return final_loans()
+
+
+
+def get_reader_holds(db_connect, pr):
+    curs = db_connect.cursor()
+    curs.execute('''SELECT books.title, books.author, holds.date 
+        FROM holds 
+        JOIN books ON holds.book_id = books.id 
+        WHERE holds.pr = ?''', (pr,))
+
+    alllines=curs.fetchall()
+    final_holds=[] 
+
+
+    for i in  range(len(alllines)):
+
+        date=alllines[i][2]
+        date = datetime.strptime(date, "%d/%m/%Y")
+
+        info_one = alllines[i].append((date+timedelta(days=5)).strftime('%d/%m/%Y'))
+
+        final_holds = final_holds.append(info_one)
+    
+    return final_holds()
+
+
+
+
