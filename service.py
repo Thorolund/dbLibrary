@@ -255,4 +255,22 @@ def get_prosrochka_books(db_connect):
 
     return prosrochka_books
 
-
+def auto_reset_holds(db_connect):
+    """
+    Reset All Holds That Expired
+    """
+    curs = db_connect.cursor()
+    today = tech.getdate()
+    
+    curs.execute("""SELECT * FROM holds""")
+    
+    for row in curs.fetchall():
+        date = row[3]
+        if tech.date1_more_date2(date, today, 5):
+            curs.execute("""DELETE FROM holds
+                            WHERE id == ?""", (row[0],))
+            curs.execute("""UPDATE books
+                            SET free = free + 1
+                            WHERE id == ?""", (row[2]))
+    
+        
