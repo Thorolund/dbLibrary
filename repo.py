@@ -25,15 +25,26 @@ def delete_book(db_connect, title:str, author:str):
     If Book Exists - Delete Row From DataBase
     """ 
     curs = db_connect.cursor()   
-    check_not_holded = True     
+  
+    curs.execute('''SELECT COUNT(*) FROM loans WHERE book_id IN 
+                     (SELECT id FROM books WHERE title = ? AND author = ?)''', (title, author))
+    loans_count = curs.fetchone()[0]
+    
+    curs.execute('''SELECT COUNT(*) FROM holds WHERE book_id IN 
+                     (SELECT id FROM books WHERE title = ? AND author = ?)''', (title, author))
+    holds_count = curs.fetchone()[0]
 
+
+    
     if not(tech.check_book_exist(db_connect, author, title)):
         return False
-    if not(check_not_holded):
+    
+    if loans_count > 0 or holds_count > 0:
+        print(f"Нельзя удалить книгу '{title}'")
         return False
     
-    curs.execute("""DELETE FROM books                          
-                    WHERE author == ? AND title == ?""", (author, title))     
+    curs.execute("DELETE FROM books WHERE title = ? AND author = ?", (title, author))  
+   
     db_connect.commit()
     
     return True         
@@ -67,9 +78,23 @@ def delete_reader(db_connect, pr:str):
     If Reader Exists And Not Loans/Holds - Delete Row From DataBase
     """
     curs = db_connect.cursor()
+
+    curs.execute("SELECT COUNT(*) FROM loans WHERE pr = ?", (pr,))
+    loans_count = curs.fetchone()[0]
     
-    curs.execute("""DELETE FROM readers
-                    WHERE pr == ?""", (pr, ))
+    curs.execute("SELECT COUNT(*) FROM holds WHERE pr = ?", (pr,))
+    holds_count = curs.fetchone()[0]
+    
+    if loans_count > 0 or holds_count > 0:
+        print(f"Нельзя удалить читателя {pr}")
+        return False
+    if not tech.check_reader_exist(db_connect, pr):
+        return False
+    
+
+    curs.execute("DELETE FROM readers WHERE pr = ?", (pr,))
+
+    
     
     db_connect.commit()
     
