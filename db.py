@@ -30,15 +30,13 @@ def create_tables(db_connect=connect_db("dbL.db")):
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     pr TEXT NOT NULL REFERENCES readers(pr),
                     book_id INTEGER NOT NULL REFERENCES books(id),
-                    total INTEGER NOT NULL CHECK(total >= 1),
-                    free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
+                    date TEXT NOT NULL)""")
     
     curs.execute("""CREATE TABLE IF NOT EXISTS holds (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     pr TEXT NOT NULL REFERENCES readers(pr),
                     book_id INTEGER NOT NULL REFERENCES books(id),
-                    total INTEGER NOT NULL CHECK(total >= 1),
-                    free INTEGER NOT NULL CHECK(free >= 0 and free <=total))""")
+                    date TEXT NOT NULL)""")
     
     db_connect.commit()
 

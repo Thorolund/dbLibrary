@@ -32,15 +32,6 @@ def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
     
     return [i for i in curs.fetchall]
 
-
-
-
-def getdate():
-
-    return datetime.now().strftime("%d/%m/%y")
-
-
-
 def booking_book(db_connect, pr, title, author):
 
     """
@@ -65,7 +56,7 @@ def booking_book(db_connect, pr, title, author):
     if active_holds >= 5:
         return False
     
-    date=getdate()
+    date=tech.getdate()
 
     curs.execute("INSERT INTO holds (pr, book_id, date) VALUES (?, ?, ?)", (pr, book_id, date))
 
@@ -146,7 +137,7 @@ def take_book_home(db_connect, pr, title, author):
                      WHERE id==?""", (book_id, ))
     
 
-    date=getdate()
+    date=tech.getdate()
     curs.execute("INSERT INTO loans (pr, book_id, date) VALUES (?, ?, ?)", (pr, book_id, date))
 
 
