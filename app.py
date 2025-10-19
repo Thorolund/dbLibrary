@@ -2,8 +2,7 @@ import db
 import repo
 import service
 "КОММЕНТЫ ЧЕСТНО НЕ ГПТШНЫЕ, МЫ С АНДРЕЕМ ТАК ОБЩАЕМСЯ ПРОСТО"
-"PS: я не знаю, почему каждое слово с большой буквы"\
-
+"PS: я не знаю, почему каждое слово с большой буквы"
 
 path = input("Input path:   ")
 db_connect = db.connect_db(path)
@@ -25,6 +24,9 @@ cancel booking - 'ccbk'
 take book home - 'tkbkh'
 return book = 'rbk'
 reset expired holds - 'arsth'
+GET ALL BORROWED BOOKS BY READER - 'gbb'      
+GET ALL HELD BOOKS BY READER - 'ghb'          
+GET OVERDUE BOOKS - 'gov'                     
 ======================""")
         mode = input()
         if mode == 'ctbls':
@@ -99,4 +101,54 @@ reset expired holds - 'arsth'
             service.return_book(db_connect, pr, title, author)
         elif mode == 'arsth':
             service.auto_reset_holds(db_connect)
+        
+        # spisochki
+        elif mode=='gbb': 
+                
+                pr = input("Pr of reader:   ")
+                borrowed_books = service.get_all_borrowed_by_reader(db_connect, pr)
+
+                if borrowed_books:
+                    print(f"\n---Books borrowed reader {pr}---")
+                    i=1
+
+                    for book in borrowed_books:
+                        print(f"{i}. Title: {book[0]}, Author: {book[1]}, Loan Date: {book[2]}")
+
+                        i+=1
+                else:
+                    print(f"***No borrowed booksfor reader***{pr}")
+                    
+        elif mode=='ghb':  
+                pr = input("Enter reader's PR:   ")
+                held_books = service.get_all_held_by_reader(db_connect, pr)
+
+
+                if held_books:
+                    print(f"\n---Books held by reader {pr}---")
+                    i=1
+
+                    for book in held_books:
+
+                        print(f"{i}. Title: {book[0]}, author: {book[1]}, Hold Date: {book[2]}")
+                        i+=1
+
+                else:
+                    print(f"***No hold books for reader {pr}***")
+                    
+        elif mode == 'gov': 
+            overdue_books = service.get_prosrochka_books(db_connect)
+            if overdue_books:
+                print(f"\n---prosrochka Books ({len(overdue_books)}) ---")
+                i=1
+
+                for book in overdue_books:
+                    print(f"{i}. Reader: {book[1]} ({book[0]})")         
+                    print(f"Book: '{book[2]}' by {book[3]}")          
+                    print(f"return by: {book[4]}") 
+                    i+=1   
+
+            else:
+                print("***No  prosrochka books found***")
 user_interface()
+#chinases
