@@ -37,7 +37,5 @@ def create_tables(db_connect=connect_db("dbL.db")):
                     pr TEXT NOT NULL REFERENCES readers(pr),
                     book_id INTEGER NOT NULL REFERENCES books(id),
                     date TEXT NOT NULL)""")
-    
+    print("Tables existed or now")
     db_connect.commit()
-
-create_tables(connect_db("dbL.db"))

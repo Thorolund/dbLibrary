@@ -1,114 +1,102 @@
 import db
 import repo
 import service
-
-def init_database():
-
-    db_connect = db.connect_db("dbL.db")
-    db.create_tables(db_connect)
-    return db_connect
+"КОММЕНТЫ ЧЕСТНО НЕ ГПТШНЫЕ, МЫ С АНДРЕЕМ ТАК ОБЩАЕМСЯ ПРОСТО"
+"PS: я не знаю, почему каждое слово с большой буквы"\
 
 
-def demo_books(db_connect):
-    repo.add_book(db_connect, "Булька Брабаулька", "Вова Солодков", "Гламур", 3)
-
-    repo.add_book(db_connect, "Преступление и наказание", "Федор Достоевский", "Роман", 2)
-
-    repo.add_book(db_connect, "1984", "Джордж Оруэлл", "Антиутопия", 1)
-
-    repo.add_book(db_connect, "Мастер и Маргарита", "Михаил Булгаков", "Роман", 2)
-
-
-
-
-
-
-
-def demo_readers(db_connect):
-
-    pr1 = repo.add_reader(db_connect, "Иван Иванов", "89991112233", 25)
-    pr2 = repo.add_reader(db_connect, "Петр Петров", "89994445566", 30)
-    pr3 = repo.add_reader(db_connect, "Мария Сидорова", "89997778899", 22)
+path = input("Input path:   ")
+db_connect = db.connect_db(path)
     
-    return pr1, pr2, pr3
-
-
-
-def demo_operations(db_connect, pr1, pr2, pr3):
-
-
-    service.hold_book(db_connect, pr1, "Мастер и Маргарита", "Михаил Булгаков")
-    service.hold_book(db_connect, pr2, "1984", "Джордж Оруэлл")
-    service.hold_book(db_connect, pr3, "Булька Брабаулька", "Вова Солодков")
-    
-
-    service.take_book_home(db_connect, pr1, "Мастер и Маргарита", "Михаил Булгаков")
-    service.take_book_home(db_connect, pr2, "Преступление и наказание", "Федор Достоевский")
-    
-
-    print(f"\nКниги, взятые читателем {pr1}:")
-
-    borrowed = service.get_all_borrowed_by_reader(db_connect, pr1)
-
-    for book in borrowed:
-
-        print(f"  - {book[0]} ({book[1]}), выдана: {book[2]}")
-    
-    print(f"\nЗабронированные книги читателем {pr3}:")
-
-    held = service.get_all_held_by_reader(db_connect, pr3)
-    for book in held:
-        print(f"  - {book[0]} ({book[1]}), забронирована: {book[2]}")
-    
-    # Возврат 
-    service.return_book(db_connect, pr1, "Мастер и Маргарита", "Михаил Булгаков")
-
-
-
-
-
-
-def search(db_connect):
-
-    
-    print("\nПоиск по жанру 'Роман':")
-    results = service.search_books(db_connect, genre="Роман")
-    for book in results:
-        print(f"  - {book[0]} ({book[1]}), {book[2]}, всего: {book[3]}, свободно: {book[4]}")
-
-
-    print("\nПоиск по автору 'Оруэлл':")
-    results = service.search_books(db_connect, author="Оруэлл")
-    for book in results:
-        print(f"  - {book[0]} ({book[1]}), {book[2]}, всего: {book[3]}, свободно: {book[4]}")
-
-
-
-
-def main():
-    
-    # Инициализация базы данных
-    db_connect = init_database()
-    
-    # Демонстрация функционала
-    demo_books(db_connect)
-    pr1, pr2, pr3 = demo_readers(db_connect)
-    demo_operations(db_connect, pr1, pr2, pr3)
-    search(db_connect)
-    
-    # Автосброс бронирований (в демо-режиме обычно ничего не сбрасывает)
-    print("\n=== АВТОСБРОС БРОНИРОВАНИЙ ===")
-    service.auto_cancel_holds(db_connect)
-    
-    # Проверка просроченных книг
-    print("\n=== ПРОВЕРКА ПРОСРОЧЕННЫХ КНИГ ===")
-    overdue = service.get_overdue_books(db_connect)
-    if overdue:
-        for book in overdue:
-            print(f"Просрочка: {book['full_name']} - '{book['title']}', должна была вернуть: {book['date_return']}")
-    else:
-        print("Просроченных книг нет")
-    
-
-
-main()
+def user_interface():
+    mode = ""
+    while (mode != 'q'):
+        print("""======================
+Modes:
+quit - 'q'
+create tables - 'ctbls'
+add book - 'abk'
+delete book - 'dbk'
+add reader - 'ar'
+delete reader - 'dr'
+find book by filters - 'fbk'
+booking book - 'bkbk'
+cancel booking - 'ccbk'
+take book home - 'tkbkh'
+return book = 'rbk'
+reset expired holds - 'arsth'
+======================""")
+        mode = input()
+        if mode == 'ctbls':
+            db.create_tables(db_connect)
+        elif mode == 'abk':
+            title = input("Title:   ")
+            author = input("Author:   ")
+            genre = input("Genre:   ")
+            n = input("Count:   ")
+            if n.isdigit():
+                repo.add_book(db_connect, title, author, genre, int(n))
+            else:
+                repo.add_book(db_connect, title, author, genre)
+        elif mode == 'dbk':
+            title = input("Title:   ")
+            author = input("Author:   ")
+            repo.delete_book(db_connect, title, author)
+        elif mode == 'ar':
+            full_name = input("Full name:   ")
+            while (len(full_name.split()) != 2):
+                print("Uncorrect name. Try again")
+                full_name = input("Full name:   ")
+            
+            phone = input("Phone:   ")
+            while (len(phone) < 4 or not(phone.isdigit())):
+                print("Uncorrect phone. Try again")
+                phone = input("Phone:   ")
+            age = input("Age:   ")
+            while (not(age.isdigit())):
+                print("Uncorrect age. Try again")
+                age = input("Age:   ")
+            repo.add_reader(db_connect, full_name, phone, age)
+        elif mode == 'dr':
+            pr = input("Pr of reader:   ")
+            repo.delete_reader(db_connect, pr)
+        elif mode == 'fbk':
+            title = None
+            author = None
+            genre = None
+            filters = input("Choose filters(Title Author Genre):    ")
+            for filter in filters.split():
+                if filter == "Title":
+                    title = input("Title:   ")
+                elif filter == "Author":
+                    author = input("Author:   ")
+                elif filter == "Genre":
+                    genre = input("Genre:   ")
+                else:
+                    print(f"There isn't filter {filter}")
+            result = service.find_books(db_connect, title, author, genre)
+            for book in result:
+                print(" ".join([str(i) for i in book]))
+        elif mode == 'bkbk':
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.booking_book(db_connect, pr, title, author)
+        elif mode == "tkbkh":
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.take_book_home(db_connect, pr, title, author)
+        elif mode == 'ccbk':
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.cancel_booking(db_connect, pr, title, author)
+        elif mode == 'rbk':
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.return_book(db_connect, pr, title, author)
+        elif mode == 'arsth':
+            service.auto_reset_holds(db_connect)
+user_interface()

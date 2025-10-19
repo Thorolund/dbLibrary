@@ -7,9 +7,9 @@ def add_book(db_connect:sqlite3.connect, title:str, author:str, genre:str, n:int
     """
     curs = db_connect.cursor()
 
-    if tech.check_book_exist(db_connect, author, title):
+    if tech.check_book_exist(db_connect, title, author):
         curs.execute("""UPDATE books
-                        SET total = total + ?
+                        SET total = total + ?, free = free + 1
                         WHERE author == ? AND title == ?""", (n, author, title))
     else:
         curs.execute("""INSERT INTO books (title, author, genre, total, free)
@@ -17,6 +17,7 @@ def add_book(db_connect:sqlite3.connect, title:str, author:str, genre:str, n:int
                         (?, ?, ?, ?, ?)""", (title, author, genre, n, n))
     db_connect.commit()
     
+    print("Book is added")
     return True
 
 
@@ -36,17 +37,18 @@ def delete_book(db_connect, title:str, author:str):
 
 
     
-    if not(tech.check_book_exist(db_connect, author, title)):
+    if not(tech.check_book_exist(db_connect, title, author)):
+        print(f"{author} - '{title}' isn't exist")
         return False
     
     if loans_count > 0 or holds_count > 0:
-        print(f"Нельзя удалить книгу '{title}'")
+        print(f"Can't delete {author} - '{title}' 'cause it holded/loaned")
         return False
     
     curs.execute("DELETE FROM books WHERE title = ? AND author = ?", (title, author))  
    
     db_connect.commit()
-    
+    print(f"Book deleted")
     return True         
 
     
@@ -62,6 +64,7 @@ def add_reader(db_connect, full_name:str, phone:str, age:int=18):
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
     
     if tech.check_reader_exist(db_connect, pr):
+        print("Can't add reader. Analogy already added")
         return False
 
     curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
@@ -69,7 +72,7 @@ def add_reader(db_connect, full_name:str, phone:str, age:int=18):
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
         
     db_connect.commit()
-
+    print("Reader is added")
     return True   
 
 
@@ -86,16 +89,13 @@ def delete_reader(db_connect, pr:str):
     holds_count = curs.fetchone()[0]
     
     if loans_count > 0 or holds_count > 0:
-        print(f"Нельзя удалить читателя {pr}")
+        print(f"Can't delete reader {pr} 'cause it has holds/loans")
         return False
     if not tech.check_reader_exist(db_connect, pr):
+        print(f"There isn't reader {pr}")
         return False
     
-
     curs.execute("DELETE FROM readers WHERE pr = ?", (pr,))
-
-    
-    
+    print(f"Reader {pr} is deleted")
     db_connect.commit()
-    
     return True
