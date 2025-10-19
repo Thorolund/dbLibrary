@@ -249,10 +249,10 @@ def get_prosrochka_books(db_connect):
         
         if date > return_date:
             date_return = return_date.strftime("%d/%m/%y")
-            loan[4] = date_return
-            
-        prosrochka_books.append(loan)
-
+            loan[4] = date_return  
+              
+        prosrochka_books.append(loan)  
+  
     return prosrochka_books
 
 
