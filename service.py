@@ -85,34 +85,39 @@ def cancel_booking(db_connect, pr, title, author):
     """
     Cancel Booking
     """
+        
     curs = db_connect.cursor()
-    curs.execute("""SELECT id FROM books
-                    WHERE title==? AND author==?""", (title, author))
-    book_id = curs.fetchone()[0]
-
-    if not book_id:
+    
+    if not tech.check_book_exist(db_connect, title, author):
         print(f"There isn't {author} - '{title}'")
         return False
     
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
         return False
-   
+    
+    curs.execute("""SELECT id FROM books
+                    WHERE title==? AND author==?""", (title, author))
+    book_id = curs.fetchone()[0]
+    
     curs.execute("""SELECT id FROM holds 
                     WHERE pr == ? AND book_id == ?""", (pr, book_id))
 
-    if not curs.fetchone():
+    holds = curs.fetchone()
+    if not holds:
         print(f"There isn't holds")
         return False
     
+    hold_id = holds[0]
     curs.execute("""DELETE FROM holds 
-                    WHERE pr == ? AND book_id == ?""", (pr, book_id))
+                    WHERE id == ?""", (hold_id,))
 
     curs.execute("""UPDATE books
                     SET free= free+1
                     WHERE id==?""", (book_id, ))
 
     print(f"Booking a {author} - '{title}' for a {pr} remotely")
+    db_connect.commit()
     return True
 
 def take_book_home(db_connect, pr, title, author):
