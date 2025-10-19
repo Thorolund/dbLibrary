@@ -7,9 +7,9 @@ def add_book(db_connect:sqlite3.connect, title:str, author:str, genre:str, n:int
     """
     curs = db_connect.cursor()
 
-    if tech.check_book_exist(db_connect, author, title):
+    if tech.check_book_exist(db_connect, title, author):
         curs.execute("""UPDATE books
-                        SET total = total + ?
+                        SET total = total + ?, free = free + 1
                         WHERE author == ? AND title == ?""", (n, author, title))
     else:
         curs.execute("""INSERT INTO books (title, author, genre, total, free)
@@ -17,6 +17,7 @@ def add_book(db_connect:sqlite3.connect, title:str, author:str, genre:str, n:int
                         (?, ?, ?, ?, ?)""", (title, author, genre, n, n))
     db_connect.commit()
     
+    print("Book is added")
     return True
 
 
