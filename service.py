@@ -39,7 +39,7 @@ def booking_book(db_connect, pr:str, title:str, author:str):
 
     curs = db_connect.cursor()
     
-    if not tech.check_book_exist(title, author):
+    if not tech.check_book_exist(db_connect, title, author):
         print(f"There isn't {author} - '{title}'")
         return False
     
@@ -50,16 +50,17 @@ def booking_book(db_connect, pr:str, title:str, author:str):
     curs.execute("""SELECT * FROM books 
                     WHERE title==? AND author==? AND free != 0""",(title, author))
     free_count = curs.fetchone()
-    book_id = curs.fetchone()[0]
 
     if not free_count:
         print(f"No free {author} - '{title}'")
         return False
     
+    book_id = free_count[0]
+    
     
     curs.execute("""SELECT COUNT(*) FROM holds 
                     WHERE pr = ?""", (pr,))
-    active_holds = curs.fetchone()[0]
+    active_holds = len([row for row in curs.fetchall()])
 
     if active_holds >= 5:
         print(f"Reader can't hold book 'cause holds too many books (>=5)")
@@ -67,13 +68,15 @@ def booking_book(db_connect, pr:str, title:str, author:str):
     
     date=tech.getdate()
 
-    curs.execute("INSERT INTO holds (pr, book_id, date) VALUES (?, ?, ?)", (pr, book_id, date))
+    curs.execute("""INSERT INTO holds (pr, book_id, date) 
+                    VALUES (?, ?, ?)""", (pr, book_id, date))
 
     curs.execute("""UPDATE books
                      SET free= free-1
                      WHERE id==?""", (book_id, ))
 
-    print()
+    db_connect.commit()
+    print(f"Reader {pr} holds {author} - '{title}'")
     return True
 
 

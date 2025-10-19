@@ -17,6 +17,7 @@ delete book - 'db'
 add reader - 'ar'
 delete reader - 'dr'
 find book by filters - 'fb'
+booking book - 'bkbk'
 ======================""")
         mode = input()
         if mode == 'ctbls':
@@ -69,5 +70,10 @@ find book by filters - 'fb'
             result = service.find_books(db_connect, title, author, genre)
             for book in result:
                 print(" ".join([str(i) for i in book]))
+        elif mode == 'bkbk':
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.booking_book(db_connect, pr, title, author)
         
 user_interface()
