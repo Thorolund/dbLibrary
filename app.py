@@ -18,6 +18,7 @@ add reader - 'ar'
 delete reader - 'dr'
 find book by filters - 'fb'
 booking book - 'bkbk'
+take book home - 'tkbkh'
 ======================""")
         mode = input()
         if mode == 'ctbls':
@@ -75,5 +76,10 @@ booking book - 'bkbk'
             title = input("Title:    ")
             author = input("Author:    ")
             service.booking_book(db_connect, pr, title, author)
+        elif mode == "tkbkh":
+            pr = input("Pr of reader:   ")
+            title = input("Title:    ")
+            author = input("Author:    ")
+            service.take_book_home(db_connect, pr, title, author)
         
 user_interface()

@@ -119,26 +119,25 @@ def take_book_home(db_connect, pr, title, author):
     """
     Reader Takes Book Home
     """
+    
     curs = db_connect.cursor()
     
-    curs.execute("""SELECT id FROM books 
-                    WHERE title==? AND author==? """, (title, author))
-    book_id = curs.fetchone()[0]
-    
-    if not book_id:
+    if not tech.check_book_exist(db_connect, title, author):
         print(f"There isn't {author} - '{title}'")
         return False
-    
     
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
         return False
     
+    curs.execute("""SELECT id FROM books 
+                    WHERE title==? AND author==? """, (title, author))
+    book_id = curs.fetchone()[0]
 
     curs.execute("""SELECT COUNT(*) FROM loans 
                     WHERE pr == ?""", (pr,))
     
-    loans = curs.fetchone()[0]
+    loans = len([row for row in curs.fetchall()])
     if loans >= 5:
         print(f"Reader can't hold book 'cause loans too many books (>=5)")
         return False
@@ -152,17 +151,13 @@ def take_book_home(db_connect, pr, title, author):
     curs.execute("""SELECT id FROM holds WHERE pr = ? AND book_id = ?""", (pr, book_id))
     has_hold = curs.fetchone()
     
-    if not free_count and not has_hold:
+    if not(free_count) and not(has_hold):
         print(f"Reader can't take book 'cause not free and not hold")
         return False
     
 
     if has_hold:
         curs.execute("""DELETE FROM holds WHERE pr == ? AND book_id == ?""", (pr, book_id))
-
-        curs.execute("""UPDATE books
-                        SET free = free-1
-                        WHERE id==?""", (book_id, ))
     
 
     date=tech.getdate()
@@ -172,6 +167,7 @@ def take_book_home(db_connect, pr, title, author):
 
     
     print(f"{author} - '{title}' is taken by reader {pr}")
+    db_connect.commit()
     return True
 
 
