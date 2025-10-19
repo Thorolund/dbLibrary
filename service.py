@@ -314,5 +314,6 @@ def auto_reset_holds(db_connect):
             curs.execute("""UPDATE books
                             SET free = free + 1
                             WHERE id == ?""", (row[2]))
+    print("All expired loand reset")
     
         

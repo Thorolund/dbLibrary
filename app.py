@@ -12,20 +12,21 @@ def user_interface():
 Modes:
 quit - 'q'
 create tables - 'ctbls'
-add book - 'ab'
-delete book - 'db'
+add book - 'abk'
+delete book - 'dbk'
 add reader - 'ar'
 delete reader - 'dr'
-find book by filters - 'fb'
+find book by filters - 'fbk'
 booking book - 'bkbk'
 cancel booking - 'ccbk'
 take book home - 'tkbkh'
 return book = 'rbk'
+reset expired holds - 'arsth'
 ======================""")
         mode = input()
         if mode == 'ctbls':
             db.create_tables(db_connect)
-        elif mode == 'ab':
+        elif mode == 'abk':
             title = input("Title:   ")
             author = input("Author:   ")
             genre = input("Genre:   ")
@@ -34,7 +35,7 @@ return book = 'rbk'
                 repo.add_book(db_connect, title, author, genre, int(n))
             else:
                 repo.add_book(db_connect, title, author, genre)
-        elif mode == 'db':
+        elif mode == 'dbk':
             title = input("Title:   ")
             author = input("Author:   ")
             repo.delete_book(db_connect, title, author)
@@ -56,7 +57,7 @@ return book = 'rbk'
         elif mode == 'dr':
             pr = input("Pr of reader:   ")
             repo.delete_reader(db_connect, pr)
-        elif mode == 'fb':
+        elif mode == 'fbk':
             title = None
             author = None
             genre = None
@@ -93,4 +94,6 @@ return book = 'rbk'
             title = input("Title:    ")
             author = input("Author:    ")
             service.return_book(db_connect, pr, title, author)
+        elif mode == 'arsth':
+            service.auto_reset_holds(db_connect)
 user_interface()
