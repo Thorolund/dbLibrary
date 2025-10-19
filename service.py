@@ -181,29 +181,30 @@ def return_book(db_connect, pr, title, author):
     Return Book
     """
     curs = db_connect.cursor()
-
-    curs.execute("""SELECT id FROM books 
-                 WHERE title==? AND author==? """,(title, author))
-    book_id = curs.fetchone()[0]
-
-
-    if not book_id:
+    
+    if not tech.check_book_exist(db_connect, title, author):
         print(f"There isn't {author} - '{title}'")
         return False
     
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
         return False
+
+    curs.execute("""SELECT id FROM books 
+                 WHERE title==? AND author==? """,(title, author))
+    
+    book_id = curs.fetchone()[0]
     
     
     curs.execute("""SELECT * FROM loans 
                     WHERE pr == ? AND book_id == ?""", (pr, book_id))
-    if not curs.fetchone():
+    loan = curs.fetchone()
+    if not loan:
         print(f"{author} - '{title}' wasn't taken by reader {pr}")
         return False
-    
+    loan_id = loan[0]
     curs.execute("""DELETE FROM loans 
-                    WHERE pr = ? AND book_id = ?""", (pr, book_id))
+                    WHERE id == ?""", (loan_id,))
 
 
     curs.execute("""UPDATE books
@@ -212,6 +213,7 @@ def return_book(db_connect, pr, title, author):
 
 
     print(f"{author} - '{title}' is returned from reader {pr}")
+    db_connect.commit()
     return True
 
 def get_reader_loans(db_connect, pr):
