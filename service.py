@@ -12,25 +12,25 @@ def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
     if title != None:
         if where_check != "":
             where_check += " AND"
-        where_check += f" title == {title}"
+        where_check += f" title == '{title}'"
 
     if author != None:
         if where_check != "":
             where_check += " AND"
-        where_check += f" author == {author}"
+        where_check += f" author == '{author}'"
     
     if genre != None:
         if where_check != "":
             where_check += " AND"
-        where_check += f" genre == {genre}"
+        where_check += f" genre == '{genre}'"
     
     if where_check != "":
             where_check = "WHERE" + where_check
 
-    curs.execute(f"""SELECT title, author, genre, total, free FROM books
-                     {where_check}""")
+    tsk = f"""SELECT title, author, genre, total, free FROM books {where_check}"""
+    curs.execute(tsk)
     
-    return [i for i in curs.fetchall]
+    return [i for i in curs.fetchall()]
 
 def booking_book(db_connect, pr:str, title:str, author:str):
     """

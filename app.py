@@ -16,6 +16,7 @@ add book - 'ab'
 delete book - 'db'
 add reader - 'ar'
 delete reader - 'dr'
+find book by filters - 'fb'
 ======================""")
         mode = input()
         if mode == 'ctbls':
@@ -51,4 +52,22 @@ delete reader - 'dr'
         elif mode == 'dr':
             pr = input("Pr of reader:   ")
             repo.delete_reader(db_connect, pr)
+        elif mode == 'fb':
+            title = None
+            author = None
+            genre = None
+            filters = input("Choose filters(Title Author Genre):    ")
+            for filter in filters.split():
+                if filter == "Title":
+                    title = input("Title:   ")
+                elif filter == "Author":
+                    author = input("Author:   ")
+                elif filter == "Genre":
+                    genre = input("Genre:   ")
+                else:
+                    print(f"There isn't filter {filter}")
+            result = service.find_books(db_connect, title, author, genre)
+            for book in result:
+                print(" ".join([str(i) for i in book]))
+        
 user_interface()
