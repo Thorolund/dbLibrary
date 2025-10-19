@@ -37,17 +37,18 @@ def delete_book(db_connect, title:str, author:str):
 
 
     
-    if not(tech.check_book_exist(db_connect, author, title)):
+    if not(tech.check_book_exist(db_connect, title, author)):
+        print(f"{author} - '{title}' isn't exist")
         return False
     
     if loans_count > 0 or holds_count > 0:
-        print(f"Нельзя удалить книгу '{title}'")
+        print(f"Can't delete {author} - '{title}' 'cause it holded/loaned")
         return False
     
     curs.execute("DELETE FROM books WHERE title = ? AND author = ?", (title, author))  
    
     db_connect.commit()
-    
+    print(f"Book deleted")
     return True         
 
     
