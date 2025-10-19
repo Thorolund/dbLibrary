@@ -14,6 +14,8 @@ quit - 'q'
 create tables - 'ctbls'
 add book - 'ab'
 delete book - 'db'
+add reader - 'ar'
+delete reader - 'dr'
 ======================""")
         mode = input()
         if mode == 'ctbls':
@@ -31,4 +33,22 @@ delete book - 'db'
             title = input("Title:   ")
             author = input("Author:   ")
             repo.delete_book(db_connect, title, author)
+        elif mode == 'ar':
+            full_name = input("Full name:   ")
+            while (len(full_name.split()) != 2):
+                print("Uncorrect name. Try again")
+                full_name = input("Full name:   ")
+            
+            phone = input("Phone:   ")
+            while (len(phone) < 4 or not(phone.isdigit())):
+                print("Uncorrect phone. Try again")
+                phone = input("Phone:   ")
+            age = input("Age:   ")
+            while (not(age.isdigit())):
+                print("Uncorrect age. Try again")
+                age = input("Age:   ")
+            repo.add_reader(db_connect, full_name, phone, age)
+        elif mode == 'dr':
+            pr = input("Pr of reader:   ")
+            repo.delete_reader(db_connect, pr)
 user_interface()

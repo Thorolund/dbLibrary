@@ -64,6 +64,7 @@ def add_reader(db_connect, full_name:str, phone:str, age:int=18):
     pr = name[0]+surname[0] + str(len(name))+str(len(surname)) + phone[-4:]
     
     if tech.check_reader_exist(db_connect, pr):
+        print("Can't add reader. Analogy already added")
         return False
 
     curs.execute("""INSERT INTO readers (pr, full_name, phone, age)
@@ -71,7 +72,7 @@ def add_reader(db_connect, full_name:str, phone:str, age:int=18):
                     (?, ?, ?, ?)""", (pr, full_name, phone, age,))
         
     db_connect.commit()
-
+    print("Reader is added")
     return True   
 
 
@@ -88,16 +89,13 @@ def delete_reader(db_connect, pr:str):
     holds_count = curs.fetchone()[0]
     
     if loans_count > 0 or holds_count > 0:
-        print(f"Нельзя удалить читателя {pr}")
+        print(f"Can't delete reader {pr} 'cause it has holds/loans")
         return False
     if not tech.check_reader_exist(db_connect, pr):
+        print(f"There isn't reader {pr}")
         return False
     
-
     curs.execute("DELETE FROM readers WHERE pr = ?", (pr,))
-
-    
-    
+    print(f"Reader {pr} is deleted")
     db_connect.commit()
-    
     return True
