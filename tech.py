@@ -12,16 +12,21 @@ def check_reader_exist(db_connect, pr:str) -> bool:
     
     return len([i for i in curs.fetchall()])>0
 
-def check_book_exist(db_connect, title:str, author:str) -> bool:
+def check_book_exist(db_connect, title:str, author:str, return_id:bool=False):
     """
     Checking Is Book Exists
     """
     curs = db_connect.cursor()
 
-    curs.execute("""SELECT * FROM books
-                 WHERE title==? AND author==?""", (title, author))
+    curs.execute("""SELECT id FROM books
+                 WHERE title=? AND author=?""", (title, author))
     
-    return len([i for i in curs.fetchall()])>0
+    result = curs.fetchone()
+    
+    if return_id:
+        return result[0] if result else False
+    else:
+        return bool(result)
 
 def getdate():
     """

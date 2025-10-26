@@ -30,7 +30,7 @@ def find_books(db_connect, title:str=None, author:str=None, genre:str=None):
     tsk = f"""SELECT title, author, genre, total, free FROM books {where_check}"""
     curs.execute(tsk)
     
-    return [i for i in curs.fetchall()]
+    return curs.fetchall()
 
 def booking_book(db_connect, pr:str, title:str, author:str):
     """
@@ -60,7 +60,8 @@ def booking_book(db_connect, pr:str, title:str, author:str):
     
     curs.execute("""SELECT COUNT(*) FROM holds 
                     WHERE pr = ?""", (pr,))
-    active_holds = len([row for row in curs.fetchall()])
+    
+    active_holds = curs.fetchone()[0]
 
     if active_holds >= 5:
         print(f"Reader can't hold book 'cause holds too many books (>=5)")
@@ -96,19 +97,36 @@ def cancel_booking(db_connect, pr, title, author):
         print(f"There isn't reader {pr}")
         return False
     
-    curs.execute("""SELECT id FROM books
-                    WHERE title==? AND author==?""", (title, author))
-    book_id = curs.fetchone()[0]
+    # curs.execute("""SELECT id FROM books
+    #                 WHERE title==? AND author==?""", (title, author))
+    # book_id = curs.fetchone()[0]
     
-    curs.execute("""SELECT id FROM holds 
-                    WHERE pr == ? AND book_id == ?""", (pr, book_id))
+    # curs.execute("""SELECT id FROM holds 
+    #                 WHERE pr == ? AND book_id == ?""", (pr, book_id))
 
-    holds = curs.fetchone()
-    if not holds:
+    # holds = curs.fetchone()
+    # if not holds:
+    #     print(f"There isn't holds")
+    #     return False
+
+
+    curs.execute("""SELECT books.id, holds.id 
+                    FROM books 
+                    JOIN holds ON books.id = holds.book_id 
+                    WHERE books.title=? AND books.author=? AND holds.pr=?""", 
+                    (title, author, pr))
+    result = curs.fetchone()
+    
+    if not result:
         print(f"There isn't holds")
         return False
+
+    book_id = result[0]
+    hold_id= result[1]
+
+
     
-    hold_id = holds[0]
+    
     curs.execute("""DELETE FROM holds 
                     WHERE id == ?""", (hold_id,))
 
@@ -127,43 +145,66 @@ def take_book_home(db_connect, pr, title, author):
     
     curs = db_connect.cursor()
     
-    if not tech.check_book_exist(db_connect, title, author):
+    #tech id tozhe ispravil
+    book_id = tech.check_book_exist(db_connect, title, author, return_id=True)
+    if not book_id:
         print(f"There isn't {author} - '{title}'")
         return False
     
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
         return False
-    
-    curs.execute("""SELECT id FROM books 
-                    WHERE title==? AND author==? """, (title, author))
-    book_id = curs.fetchone()[0]
 
     curs.execute("""SELECT COUNT(*) FROM loans 
                     WHERE pr == ?""", (pr,))
     
-    loans = len([row for row in curs.fetchall()])
-    if loans >= 5:
+    # loans = len([row for row in curs.fetchall()])
+    # if loans >= 5:
+    #     print(f"Reader can't hold book 'cause loans too many books (>=5)")
+    #     return False
+    
+
+    # curs.execute("""SELECT free FROM books 
+    #                 WHERE id == ? AND free != 0""", (book_id,))
+    # free_count = curs.fetchone()
+
+    
+    # curs.execute("""SELECT id FROM holds WHERE pr = ? AND book_id = ?""", (pr, book_id))
+    # has_hold = curs.fetchone()
+    
+    # if not(free_count) and not(has_hold):
+    #     print(f"Reader can't take book 'cause not free and not hold")
+    #     return False
+    
+
+    # if has_hold:
+    #     curs.execute("""DELETE FROM holds WHERE pr == ? AND book_id == ?""", (pr, book_id))
+    loansc = curs.fetchone()[0]
+    
+    if loansc >= 5:
         print(f"Reader can't hold book 'cause loans too many books (>=5)")
         return False
     
-
-    curs.execute("""SELECT free FROM books 
-                    WHERE id == ? AND free != 0""", (book_id,))
-    free_count = curs.fetchone()
-
+    curs.execute("""SELECT books.free, holds.id 
+                    FROM books 
+                    LEFT JOIN holds ON books.id = holds.book_id AND holds.pr = ?
+                    WHERE books.id = ?""", (pr, book_id))
+    book_data = curs.fetchone()
     
-    curs.execute("""SELECT id FROM holds WHERE pr = ? AND book_id = ?""", (pr, book_id))
-    has_hold = curs.fetchone()
-    
-    if not(free_count) and not(has_hold):
+    free_count=book_data[0]
+    hold_id = book_data[1]
+
+    if free_count<=0 and not hold_id:
         print(f"Reader can't take book 'cause not free and not hold")
         return False
     
+    if hold_id:
 
-    if has_hold:
-        curs.execute("""DELETE FROM holds WHERE pr == ? AND book_id == ?""", (pr, book_id))
-    
+        curs.execute("""DELETE FROM holds WHERE id = ?""", (hold_id,))
+    else:
+
+        curs.execute("""UPDATE books SET free = free - 1 WHERE id = ?""", (book_id,))
+
 
     date=tech.getdate()
     curs.execute("""INSERT INTO loans (pr, book_id, date) 
@@ -181,28 +222,26 @@ def return_book(db_connect, pr, title, author):
     Return Book
     """
     curs = db_connect.cursor()
-    
-    if not tech.check_book_exist(db_connect, title, author):
+    #tut tozhe tech
+    book_id = tech.check_book_exist(db_connect, title, author, return_id=True)
+    if not book_id:
         print(f"There isn't {author} - '{title}'")
         return False
     
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
         return False
-
-    curs.execute("""SELECT id FROM books 
-                 WHERE title==? AND author==? """,(title, author))
     
-    book_id = curs.fetchone()[0]
-    
-    
-    curs.execute("""SELECT * FROM loans 
+    curs.execute("""SELECT loans.id FROM loans 
                     WHERE pr == ? AND book_id == ?""", (pr, book_id))
     loan = curs.fetchone()
+
     if not loan:
         print(f"{author} - '{title}' wasn't taken by reader {pr}")
         return False
+    
     loan_id = loan[0]
+
     curs.execute("""DELETE FROM loans 
                     WHERE id == ?""", (loan_id,))
 
@@ -239,7 +278,7 @@ def get_reader_loans(db_connect, pr):
 
         final_loans=final_loans.append(info_one)
     
-    return final_loans()
+    return final_loans
 
 
 
@@ -267,7 +306,7 @@ def get_reader_holds(db_connect, pr):
 
         final_holds = final_holds.append(info_one)
     
-    return final_holds()
+    return final_holds
 
 def get_prosrochka_books(db_connect):
 
@@ -290,8 +329,7 @@ def get_prosrochka_books(db_connect):
         
         
         if date > return_date:
-            date_return = return_date.strftime("%d/%m/%y")
-            loan[4] = date_return  
+            loan[4] =return_date.strftime("%d/%m/%y")
               
         prosrochka_books.append(loan)  
   
