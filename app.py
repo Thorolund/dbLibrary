@@ -24,9 +24,9 @@ cancel booking - 'ccbk'
 take book home - 'tkbkh'
 return book = 'rbk'
 reset expired holds - 'arsth'
-GET ALL BORROWED BOOKS BY READER - 'gbb'      
-GET ALL HELD BOOKS BY READER - 'ghb'          
-GET OVERDUE BOOKS - 'gov'                     
+get all borrowed books by reader - 'gbb'      
+get all held books by reader - 'ghb'          
+get overdue books - 'gov'                     
 ======================""")
         mode = input()
         if mode == 'ctbls':
