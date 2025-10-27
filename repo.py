@@ -26,22 +26,18 @@ def delete_book(db_connect, title:str, author:str):
     If Book Exists - Delete Row From DataBase
     """ 
     curs = db_connect.cursor()   
-  
-    curs.execute('''SELECT COUNT(*) FROM loans WHERE book_id IN 
-                     (SELECT id FROM books WHERE title = ? AND author = ?)''', (title, author))
-    loans_count = curs.fetchone()[0]
-    
-    curs.execute('''SELECT COUNT(*) FROM holds WHERE book_id IN 
-                     (SELECT id FROM books WHERE title = ? AND author = ?)''', (title, author))
-    holds_count = curs.fetchone()[0]
 
-
-    
-    if not(tech.check_book_exist(db_connect, title, author)):
+    book_id = tech.check_book_exist(db_connect, title, author, True)
+    if not(book_id):
         print(f"{author} - '{title}' isn't exist")
         return False
     
-    if loans_count > 0 or holds_count > 0:
+    curs.execute("""SELECT loans.id, holds.id FROM books
+                    LEFT JOIN loans ON loans.book_id == books.id
+                    LEFT JOIN holds ON holds.book_id == books.id
+                    WHERE books.id == ?""", (book_id, ))
+    h_and_l = curs.fetchall()
+    if h_and_l != [(None, None)]:
         print(f"Can't delete {author} - '{title}' 'cause it holded/loaned")
         return False
     
@@ -81,18 +77,18 @@ def delete_reader(db_connect, pr:str):
     If Reader Exists And Not Loans/Holds - Delete Row From DataBase
     """
     curs = db_connect.cursor()
-
-    curs.execute("SELECT COUNT(*) FROM loans WHERE pr = ?", (pr,))
-    loans_count = curs.fetchone()[0]
     
-    curs.execute("SELECT COUNT(*) FROM holds WHERE pr = ?", (pr,))
-    holds_count = curs.fetchone()[0]
-    
-    if loans_count > 0 or holds_count > 0:
-        print(f"Can't delete reader {pr} 'cause it has holds/loans")
-        return False
     if not tech.check_reader_exist(db_connect, pr):
         print(f"There isn't reader {pr}")
+        return False
+
+    curs.execute("""SELECT loans.id, holds.id FROM readers
+                    LEFT JOIN loans ON loans.book_id == readers.pr
+                    LEFT JOIN holds ON holds.book_id == readers.pr
+                    WHERE readers.pr == ?""", (pr, ))
+    h_and_l = curs.fetchall()
+    if h_and_l != [(None, None)]:
+        print(f"Can't delete reader {pr} 'cause it has holds/loans")
         return False
     
     curs.execute("DELETE FROM readers WHERE pr = ?", (pr,))
